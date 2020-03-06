@@ -4,7 +4,7 @@ class EventEmitter<EventsMap extends {} = any> {
     }
 
     // @ts-ignore
-    event<KEY extends keyof EventsMap>(event: KEY, args: Parameters<EventsMap[KEY]>): void {
+    event<Event extends keyof EventsMap>(event: Event, args: Parameters<EventsMap[Event]>): void {
         // do some stuff
     }
 }
