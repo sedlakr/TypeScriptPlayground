@@ -1,11 +1,7 @@
-class EventEmitter<EventsMap extends {} = any> {
-    on<Event extends keyof EventsMap>(event: Event, handler: EventsMap[Event]): void {
-        // do some stuff
-    }
+declare class EventEmitter<EventsMap extends {} = any> {
+    on<Event extends keyof EventsMap>(event: Event, handler: EventsMap[Event]): void;
 
-    event<Event extends keyof EventsMap>(...[event, args]: EventsMap[Event] extends (...args: infer P) => any ? (P extends [] ? [Event, void] : [Event, P]) : [Event, void]): void {
-        // do some stuff
-    }
+    event<Event extends keyof EventsMap>(...[event, args]: EventsMap[Event] extends (...args: infer P) => void ? (P extends never[] ? [Event] : [Event, P]) : never): void;
 }
 
 enum Events {
@@ -23,47 +19,35 @@ const typedEventEmitter = new EventEmitter<{
     [Events.Third]: (a: string) => void,
 }>();
 
-
-/**
- * First
- */
-// with args
+// OK
+typedEventEmitter.event(Events.First, [1]);
+typedEventEmitter.event(Events.Second);
+typedEventEmitter.event(Events.Third, ["4"]);
 typedEventEmitter.on(Events.First, (a: number) => {
     void a;
 });
-typedEventEmitter.event(Events.First, [1]);
-// error
-typedEventEmitter.event(Events.First);
-typedEventEmitter.event(Events.First, ["b"]);
-typedEventEmitter.on(Events.First, (a: string) => {
-
-});
-
-/**
- * Second
- */
-// without args
 typedEventEmitter.on(Events.Second, () => {
 
 });
-typedEventEmitter.event(Events.Second);
+typedEventEmitter.on(Events.Third, (a => {
+    void a;
+}));
 
-// error
-typedEventEmitter.on(Events.Second, (a: number) => {
 
-});
-typedEventEmitter.event(Events.Second, ["1"]);
-
-/**
- * Third
- */
-typedEventEmitter.event(Events.Third, ["b"]);
-
-// error
+// ERROR
+typedEventEmitter.event(Events.First);
+typedEventEmitter.event(Events.Second, []);
 typedEventEmitter.event(Events.Third);
+
+typedEventEmitter.on(Events.First, (a: string) => {
+    void a;
+});
+typedEventEmitter.event(Events.First, ["b"]);
+typedEventEmitter.event(Events.Second, ["1"]);
+typedEventEmitter.on(Events.Second, (a: number) => {
+});
 typedEventEmitter.event(Events.Third, []);
 typedEventEmitter.event(Events.Third, [1]);
-
 
 /**
  * Default is not typed
