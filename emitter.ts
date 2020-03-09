@@ -1,5 +1,5 @@
 class EventEmitter<EventsMap extends {} = any> {
-    on<Event extends keyof EventsMap>(...[event, handler]: EventsMap[Event] extends (...args: infer P) => any ? (P extends [] ? [Event, () => void] : [Event, (P) => void]) : never): void {
+    on<Event extends keyof EventsMap>(event: Event, handler: EventsMap[Event]): void {
         // do some stuff
     }
 
@@ -35,6 +35,9 @@ typedEventEmitter.event(Events.First, [1]);
 // error
 typedEventEmitter.event(Events.First);
 typedEventEmitter.event(Events.First, ["b"]);
+typedEventEmitter.on(Events.First, (a: string) => {
+
+});
 
 /**
  * Second
@@ -46,6 +49,9 @@ typedEventEmitter.on(Events.Second, () => {
 typedEventEmitter.event(Events.Second);
 
 // error
+typedEventEmitter.on(Events.Second, (a: number) => {
+
+});
 typedEventEmitter.event(Events.Second, ["1"]);
 
 /**
