@@ -1,13 +1,16 @@
 declare class EventEmitter<EventsMap extends {} = any> {
-    on<Event extends keyof EventsMap>(event: Event, handler: EventsMap[Event]): void;
+    subscribe<Event extends keyof EventsMap>(event: Event, handler: EventsMap[Event]): void;
 
     event<Event extends keyof EventsMap>(...[event, args]: EventsMap[Event] extends (...args: infer P) => void ? (P extends never[] ? [Event] : [Event, P]) : never): void;
+
+    request<Event extends keyof EventsMap>(...[event, args]: EventsMap[Event] extends (...args: infer P) => any ? (P extends never[] ? [Event] : [Event, P]) : never): EventsMap[Event] extends (...args: infer P) => infer R ? R : never;
 }
 
 enum Events {
     First = "firstEvent",
     Second = "secondEvent",
     Third = "thirdEvent",
+    Fourth = "fourthEvent",
 }
 
 /**
@@ -17,19 +20,25 @@ const typedEventEmitter = new EventEmitter<{
     [Events.First]: (a: number) => void,
     [Events.Second]: () => void,
     [Events.Third]: (a: string) => void,
+    [Events.Fourth]: (a: string) => number,
 }>();
 
 // OK
 typedEventEmitter.event(Events.First, [1]);
 typedEventEmitter.event(Events.Second);
 typedEventEmitter.event(Events.Third, ["4"]);
-typedEventEmitter.on(Events.First, (a: number) => {
+typedEventEmitter.subscribe(Events.Fourth, (a: string) => {
+    return 1;
+});
+let result: number = typedEventEmitter.request(Events.Fourth, ["a"]);
+void result;
+typedEventEmitter.subscribe(Events.First, (a: number) => {
     void a;
 });
-typedEventEmitter.on(Events.Second, () => {
+typedEventEmitter.subscribe(Events.Second, () => {
 
 });
-typedEventEmitter.on(Events.Third, (a => {
+typedEventEmitter.subscribe(Events.Third, (a => {
     void a;
 }));
 
@@ -38,13 +47,17 @@ typedEventEmitter.on(Events.Third, (a => {
 typedEventEmitter.event(Events.First);
 typedEventEmitter.event(Events.Second, []);
 typedEventEmitter.event(Events.Third);
-
-typedEventEmitter.on(Events.First, (a: string) => {
+typedEventEmitter.event(Events.Fourth);
+let num: number = typedEventEmitter.request(Events.Second);
+typedEventEmitter.subscribe(Events.Fourth, (a: string) => {
+    return "a";
+});
+typedEventEmitter.subscribe(Events.First, (a: string) => {
     void a;
 });
 typedEventEmitter.event(Events.First, ["b"]);
 typedEventEmitter.event(Events.Second, ["1"]);
-typedEventEmitter.on(Events.Second, (a: number) => {
+typedEventEmitter.subscribe(Events.Second, (a: number) => {
 });
 typedEventEmitter.event(Events.Third, []);
 typedEventEmitter.event(Events.Third, [1]);
@@ -54,7 +67,7 @@ typedEventEmitter.event(Events.Third, [1]);
  */
 const notTypedEmitter = new EventEmitter();
 
-notTypedEmitter.on("evt", (a: number) => {
+notTypedEmitter.subscribe("evt", (a: number) => {
 
 });
 notTypedEmitter.event("evt", []);
