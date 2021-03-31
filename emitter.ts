@@ -13,15 +13,17 @@ enum Events {
     Fourth = "fourthEvent",
 }
 
-/**
- * Strongly typed
- */
-const typedEventEmitter = new EventEmitter<{
+type TEventsMap = {
     [Events.First]: (a: number) => void,
     [Events.Second]: () => void,
     [Events.Third]: (a: string) => void,
     [Events.Fourth]: (a: string) => number,
-}>();
+    [key: string]: (...args: any[]) => void,
+};
+/**
+ * Strongly typed
+ */
+const typedEventEmitter = new EventEmitter<TEventsMap>();
 
 // OK
 typedEventEmitter.event(Events.First, [1]);
@@ -40,6 +42,10 @@ typedEventEmitter.subscribe(Events.Second, () => {
 });
 typedEventEmitter.subscribe(Events.Third, (a => {
     void a;
+}));
+
+typedEventEmitter.subscribe("someCustomEventNotInMap", (a => {
+	void a;
 }));
 
 
